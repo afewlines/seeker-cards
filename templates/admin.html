@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>seeker's cards - admin</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+h2{
+  font-weight: 250;
+}
+
+body {
+  background: #eee2cf;
+  font-family: 'Raleway', sans-serif;
+}
+
+.header {
+  background-color: #c2d3c0;
+  width: 100%;
+  margin: auto;
+  padding: 10px;
+
+  color: #5c5e59;
+  text-align: center;
+}
+
+table {
+  width: 50%;
+  margin: auto
+}
+
+table, th, td {
+  text-align: center;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+.start {
+  display: block;
+  width: 6em;
+  height: auto;
+  margin: 25px auto 10px auto;
+  padding: 1px 0;
+
+  background: #fff;
+
+  text-align: center;
+  font-weight: lighter;
+  font-size: 1em;
+
+  transition: width 0.5s, background 0.5s;
+}
+
+.start:hover {
+  background: #cbddff;
+  width: 5em;
+
+  transition: width 0.5s, background 0.5s;
+}
+
+.footer {
+  background-color: #c2d3c0;
+  width: 100%;
+  height: 90%;
+  margin: auto;
+  padding: 10px;
+
+  color: #535656;
+  text-align: center;
+  font-weight: lighter;
+  font-size: 0.9em;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>welcome to seeker's cards.</h2>
+</div>
+
+<br>
+
+<table>
+  <tr>
+    <th>username</th>
+    <th>points</th>
+    <th>remove</th>
+  </tr>
+  {% for player in players %}
+    <tr>
+      <td> {{ player }} </td>
+      <td> {{ players[player][0] }} </td>
+      <td>
+        <form method="post">
+          <input type="hidden" name="target" value="{{player}}" >
+          <input type="submit" value="remove">
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+
+<br>
+<div class="start" onclick="startGame()">
+  <p>start game</p>
+</div>
+
+<br>
+<div class="start" onclick="sendPing()">
+  <p>send ping</p>
+</div>
+
+<br>
+
+<div class="footer">
+  <p>copyrighted 20xx, probably</p>
+</div>
+
+</body>
+</html>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+var socket = io.connect('http://' + document.domain + ':8080');
+
+function startGame() {
+  socket.emit('start game');
+}
+
+function sendPing() {
+  socket.emit('ping in');
+}
+
+socket.on('ping out', function() {
+        console.log("ping recieved");
+    });
+
+socket.emit('room', 'admin');
+
+</script>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>seeker's cards</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      h2 {
+        font-weight: 250;
+      }
+
+      body {
+        background: #eee2cf;
+        font-family: 'Raleway', sans-serif;
+      }
+
+      /* Style the header */
+      .header {
+        background-color: #c2d3c0;
+        color: #5c5e59;
+        margin: auto;
+        width: 60%;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .promptbox {
+        color: #000000;
+        text-align: center;
+        padding: 0 20%;
+        width: 100%;
+      }
+
+      .cardholder {
+        margin: auto;
+        width: 90%;
+      }
+
+      .cardbox {
+        color: #5c5e59;
+        font-size: 1em;
+        font-weight: 100;
+        background-color: #fff;
+        background-clip: padding-box;
+        float: left;
+        width: 20%;
+        height: 150px;
+        margin: auto;
+        padding: 1em;
+        border: 5px solid rgba(0,0,0,0);
+
+        transition: background-color 0.25s;
+      }
+
+      .subbox {
+        color: #5c5e59;
+        font-size: 1em;
+        font-weight: 100;
+        float: left;
+        width: 50%;
+        height: 100%;
+        margin: auto;
+        padding: 0;
+        border: 5px solid rgba(0,0,0,0);
+      }
+
+      .subbox > p {
+        padding: 1em;
+        background-color: #fff;
+        background-clip: padding-box;
+
+        transition: background-color 0.5s;
+      }
+
+      .choosecard {
+        display: block;
+        width: 6em;
+        height: auto;
+        margin: 25px auto 10px;
+        padding: 1px 0;
+
+        background: #fff;
+
+        text-align: center;
+        font-weight: lighter;
+        font-size: 1em;
+
+        transition: width 0.5s, background 0.5s;
+      }
+
+      .leaderboard {
+        width: 40%;
+        height: auto;
+        margin: 0 30%;
+
+        color: #5c5e59;
+        text-align: center;
+        font-size: 1em;
+        font-weight: 100;
+      }
+
+      .score {
+        float: left;
+        width: 50%;
+        height: auto;
+      }
+
+      .footer {
+        background-color: #c2d3c0;
+        width: 100%;
+        height: 90%;
+        margin: auto;
+        padding: 10px;
+
+        color: #535656;
+        text-align: center;
+        font-weight: lighter;
+        font-size: 0.9em;
+      }
+
+      .cardbox:hover {
+        background-color: #cbddff;
+
+        padding: 15px;
+        border: 5px solid rgba(0,0,0,0);
+
+        transition: background-color 0.5s;
+      }
+
+      .choosecard:hover {
+        background: #cbddff;
+        width: 5em;
+
+        transition: width 0.5s, background 0.5s;
+      }
+
+      .subbox:hover > p {
+        background-color: #cbddff;
+
+        transition: background-color 0.5s;
+      }
+
+      .leaderboard:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .cardholder:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      @media (max-width: 800px) {
+        .cardbox {
+          font-size: 16px;
+          font-weight: 250;
+          width: 50%;
+        }
+
+        .cardholder {
+          width: 100%;
+        }
+
+        .leaderboard {
+          width: 100%;
+          margin: auto;
+        }
+
+        .header {
+          width: 100%;
+        }
+
+        .footer {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="header">
+      {% if username %}
+        <h2>welcome,
+          {{ username }}.</h2>
+      {% else %}
+        <h1>AN ERROR HAS OCCURED</h1>
+        <p>YOU WILL NOT BE ABLE TO PLAY</p>
+      {% endif %}
+    </div>
+
+    <br>
+    <div class="promptbox">
+      <h4 id="prompt"></h4>
+    </div>
+    <div class="promptbox">
+      <p id="judge">waiting to start</h4>
+    </div>
+    <br>
+
+    <div class="cardholder" id="holder">
+      <div class="subbox">
+        <p>~instructions~</p>
+        <p>if you're judging:</p>
+        <p>when cards appear, choose ur fav, submit</p>
+      </div>
+      <div class="subbox">
+        <p>if you're submitting:</p>
+        <p>choose appropriate # of cards</p>
+        <p>smack that submit button</p>
+      </div>
+    </div>
+
+    <div class="choosecard" id="choosecard" onclick="submitCards(this)">
+      <p>select</p>
+    </div>
+
+    <div class="leaderboard" id="leaderboard"></div>
+
+    <div class="footer">
+      <p>copyrighted 20xx, probably</p>
+    </div>
+
+  </body>
+</html>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+  var socket = io.connect('http://' + document.domain + ':8080');
+  var selected = [];
+  var submitted = false;
+  var difference = 0;
+  var started = false;
+  var judge = false;
+
+  socket.on('connect', function () {
+    socket.emit('user connect', {data: "{{ username }}"});
+  });
+
+  socket.on('starting', function (chooser) {
+    if (chooser == "{{username}}") {
+      window.alert('you are judging');
+      judge = true;
+      document.getElementById("choosecard").style.display = "none";
+    } else {
+      judge = false;
+    }
+    document.getElementById("judge").innerHTML = "current judge: " + chooser;
+    started = true;
+    socket.emit('get hand', {data: "{{ username }}"});
+    choosecard = document.getElementById("choosecard");
+    choosecard.style.backgroundColor = "";
+    choosecard.style.width = "";
+    choosecard.innerHTML = "<p>select</p>";
+    submitted = false;
+    selected = [];
+  });
+
+  socket.on('update hand', function (msg) {
+    if (judge) {
+      var myNode = document.getElementById("holder");
+      while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+      }
+      return;
+    }
+    var cards = msg.split("|");
+    cards.splice(0, 1);
+
+    var myNode = document.getElementById("holder");
+    while (myNode.firstChild) {
+      myNode.removeChild(myNode.firstChild);
+    }
+
+    for (var i = 0; i < cards.length; i++) {
+      var cardbox = document.createElement("div");
+      cardbox.className = "cardbox";
+      cardbox.id = parseInt(cards[i].substr(0, 4));
+      cardbox.addEventListener("click", function () {
+        selectCard(this)
+      });
+      cardbox.appendChild(document.createTextNode(cards[i].substr(4)));
+      document.getElementById("holder").appendChild(cardbox);
+    }
+
+    document.getElementById("choosecard").style.display = "block";
+  });
+
+  socket.on('update leaderboard', function (msg) {
+    var scores = msg.split("|");
+
+    var myNode = document.getElementById("leaderboard");
+    while (myNode.firstChild) {
+      myNode.removeChild(myNode.firstChild);
+    }
+
+    for (var i = 0; i < scores.length; i++) {
+      var score = document.createElement("div");
+      score.className = "score";
+      var para = document.createElement("p");
+      para.appendChild(document.createTextNode(scores[i]));
+      score.appendChild(para);
+      document.getElementById("leaderboard").appendChild(score);
+    }
+  });
+
+  socket.on('update prompt', function (msg) {
+    difference = parseInt(msg.substr(0, 1));
+    document.getElementById("prompt").innerHTML = msg.substr(1);
+  });
+
+  socket.on('all in', function () {
+    var myNode = document.getElementById("holder");
+    while (myNode.firstChild) {
+      myNode.removeChild(myNode.firstChild);
+    }
+    socket.emit('get sub');
+    choosecard = document.getElementById("choosecard");
+    if (judge) {
+      choosecard.style.backgroundColor = "";
+      choosecard.style.width = "";
+      choosecard.innerHTML = "<p>select</p>";
+      choosecard.style.display = "block";
+    } else {
+      choosecard.style.display = "none";
+    }
+  });
+
+  socket.on('recv sub', function (msg) {
+    var cards = msg.split("|");
+
+    var subbox = document.createElement("div");
+    subbox.className = "subbox";
+    subbox.id = cards[0];
+    subbox.addEventListener("click", function () {
+      selectSub(this)
+    });
+    for (var i = 1; i < cards.length; i++) {
+      var para = document.createElement("p");
+      para.appendChild(document.createTextNode(cards[i]));
+      subbox.appendChild(para);
+    }
+    document.getElementById("holder").appendChild(subbox);
+  });
+
+  socket.on('winner', function (user) {
+    window.alert("winner: " + user);
+  });
+
+  socket.on('ping out', function () {
+    console.log("ping recieved");
+  });
+
+  function selectCard(elmnt) {
+    if (submitted) {
+      return;
+    }
+
+    elemLoc = selected.indexOf(elmnt.id);
+    if (elemLoc >= 0) {
+      elmnt.style.backgroundColor = "";
+      selected.splice(elemLoc, 1);
+    } else {
+      if (selected.length < difference) {
+        elmnt.style.backgroundColor = "#d9cbe2";
+        selected.push(elmnt.id);
+      }
+    }
+  }
+
+  function selectSub(elmnt) {
+    if (submitted) {
+      return;
+    }
+
+    elemLoc = selected.indexOf(elmnt.id);
+    if (elemLoc >= 0) {
+      var children = elmnt.children;
+      for (var i = 0; i < children.length; i++) {
+        var tableChild = children[i];
+        tableChild.style.backgroundColor = "";
+      }
+      selected.splice(elemLoc, 1);
+    } else {
+      if (selected.length < 1) {
+        var children = elmnt.children;
+        for (var i = 0; i < children.length; i++) {
+          var tableChild = children[i];
+          tableChild.style.backgroundColor = "#d9cbe2";
+        }
+        selected.push(elmnt.id);
+      }
+    }
+  }
+
+  function submitCards(elmnt) {
+    if (submitted) {
+      return;
+    }
+
+    if (judge) {
+      if (selected.length == 1) {
+        submitted = true;
+        socket.emit('winner', {'data': selected[0]});
+        elmnt.style.backgroundColor = "#c2d3c0";
+        elmnt.style.width = "8em";
+        elmnt.innerHTML = "<p>submitted</p>";
+      } else {
+        window.alert("please select more cards");
+      }
+      return;
+    }
+
+    if (selected.length == difference) {
+      submitted = true;
+      socket.emit('submit cards', {
+        'data': ["{{username}}", selected]
+      });
+      elmnt.style.backgroundColor = "#c2d3c0";
+      elmnt.style.width = "8em";
+      elmnt.innerHTML = "<p>submitted</p>";
+    } else {
+      window.alert("please select more cards");
+    }
+  }
+</script>

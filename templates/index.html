@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>seeker's cards - home</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+h2{
+  font-weight: 250;
+}
+
+body {
+  background: #eee2cf;
+  font-family: 'Raleway', sans-serif;
+}
+
+.header {
+  background-color: #c2d3c0;
+  width: 100%;
+  margin: auto;
+  padding: 10px;
+
+  color: #5c5e59;
+  text-align: center;
+}
+
+.landingbox {
+  background: #fff;
+  width: 90%;
+  height: 200%;
+  margin: auto;
+  padding: 15px;
+
+  color: #5c5e59;
+  text-align: center;
+  font-family: 'Raleway', sans-serif;
+  font-size: 1em;
+  font-weight: lighter;
+}
+
+.loginbox {
+  background: #d9cbe2;
+  width: 50%;
+  height: 200%;
+  margin: 15px 25% 15px 25%;
+  padding: 15px;
+
+  color: #5c5e59;
+  text-align: center;
+  font-family: 'Raleway', sans-serif;
+  font-size: 1em;
+  font-weight: lighter;
+  line-height: 25px;
+}
+
+.footer {
+  background-color: #c2d3c0;
+  width: 100%;
+  height: 90%;
+  margin: auto;
+  padding: 10px;
+
+  color: #535656;
+  text-align: center;
+  font-weight: lighter;
+  font-size: 0.9em;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media (max-width: 600px) {
+  .landingbox {
+    font-weight: 250;
+    width: 95%;
+  }
+  .loginbox {
+    width: 95%;
+    margin: 15px 2.5%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>welcome to seeker's cards.</h2>
+</div>
+
+<br>
+
+<div class="landingbox">
+  <p>
+    how are we today? good?
+    <br>
+    wonderful.
+    <br> <br>
+    enter a username and enjoy.
+  </p>
+</div>
+
+
+<div class="loginbox">
+  <form method="post">
+    <input name="username" id="username" placeholder="username" maxlength="32" align="middle" required>
+    <br>
+    <input type="submit" value="play">
+  </form>
+</div>
+
+
+<div class="footer">
+  <p>copyrighted 20xx, probably</p>
+</div>
+
+</body>
+</html>
