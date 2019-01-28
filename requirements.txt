@@ -1,0 +1,4 @@
+# uhh am i doing this right
+
+flask
+flask_socketio
